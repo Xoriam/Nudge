@@ -25,17 +25,27 @@ function beginPage(res, title) {
     res.write("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css'>\n");
     res.write("</head>\n");
     res.write("<body>\n");
+    res.write("<nav class='navbar navbar-inverse navbar-fixed-top'>\n");
+    res.write("<div class='container'>\n");
+    res.write("<div class='navbar-header'>\n");
+    res.write("<a class='navbar-brand' href='#'>Nudge - Web Interface for Git Push</a>\n");
+    res.write("</div>\n");
+    res.write("</div>\n");
+    res.write("</nav>\n");
+    res.write("<div class='jumbotron'>\n");
+    res.write("<div class='container'\n");
 }
 
 function endPage(res) {
+    res.write("</div>");
     res.write("<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js'></script>\n");
     res.write("</body>\n");
     res.write("</html>\n");
     res.end();
 }
 
-function writeHeading(res, tag, classID, title) {
-    res.write("<" + tag + classID + ">" + title + "</" + tag + ">\n");
+function writeHeading(res, tag, title) {
+    res.write("<" + tag + ">" + title + "</" + tag + ">\n");
 }
 
 function beginHeading(res, tag) {
@@ -88,7 +98,7 @@ function endSelect(res) {
 function gitRemote(res) {
     child_process.exec("git remote", function(err, stdout, stderr) {
         if (err) {
-            writeHeading(res, "h2", "", "Error listing remotes");
+            writeHeading(res, "h2", "Error listing remotes");
             writePre(res, "error", stderr);
             endPage(res);
         } else {
@@ -113,7 +123,7 @@ function gitRemote(res) {
 function gitBranch(res) {
     child_process.exec("git branch", function(err, stdout, stderr) {
         if (err) {
-            writeHeading(res, "h2", "", "Error listing branches");
+            writeHeading(res, "h2", "Error listing branches");
             writePre(res, "error", stderr);
             endPage(res);
         } else {
@@ -141,15 +151,13 @@ function gitBranch(res) {
 function gitStatus(res) {
     child_process.exec("git status", function(err, stdout, stderr) {
         if (err) {
-            writeHeading(res, "h2", "", "Error retrieving status");
+            writeHeading(res, "h2", "Error retrieving status");
             writePre(res, "error", stderr);
             endPage(res);
         } else {
-            beginHeading(res, "div class='jumbotron'");
-            writeHeading(res, "h2", "class='container'", "Git Status");
+            writeHeading(res, "h2", "Git Status");
             writePre(res, "status", stdout);
             gitBranch(res);
-            endHeading(res, "div");
         }
     });
 }
@@ -167,10 +175,10 @@ function gitPush(req, res) {
         child_process.exec("git push " + form.remote + " " + form.branch, function(err, stdout, stderr) {
 
             if (err) {
-                writeHeading(res, "h2", "", "Error pushing repository");
+                writeHeading(res, "h2", "Error pushing repository");
                 writePre(res, "error", stderr);
             } else {
-                writeHeading(res,"h2", "", "Git Status");
+                writeHeading(res,"h2", "Git Status");
                 writePre(res, "push", stdout);
             }
             gitStatus(res);
@@ -189,14 +197,6 @@ function frontPage(req, res) {
         var title = "Nudge - Web Interface for Git Push";
 
         beginPage(res, title);
-        beginHeading(res, "nav class='navbar navbar-inverse navbar-fixed-top'");
-        beginHeading(res, "div class='container'");
-        beginHeading(res, "div class='navbar-header'");
-        writeHeading(res, "a", " class='navbar-brand' href='#'", title);
-        endHeading(res,"div");
-        endHeading(res, "div");
-        //writeHeading(res, "div", " class='container'", title);
-        endHeading(res, "nav");
 
         if (req.method === "POST" && req.url === "/push") {
             gitPush(req, res);
@@ -206,6 +206,7 @@ function frontPage(req, res) {
         }
     }
 }
+
 
 var server = http.createServer(frontPage);
 server.listen();
