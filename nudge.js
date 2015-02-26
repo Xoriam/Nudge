@@ -33,11 +33,10 @@ function beginPage(res, title) {
     res.write("</div>\n");
     res.write("</nav>\n");
     res.write("<div class='jumbotron'>\n");
-    res.write("<div class='container'\n");
 }
 
 function endPage(res) {
-    res.write("</div>");
+    res.write("</div>\n");
     res.write("<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js'></script>\n");
     res.write("</body>\n");
     res.write("</html>\n");
@@ -72,7 +71,9 @@ function beginForm(res) {
 }
 
 function endForm(res) {
-    res.write("<input type='submit' value='Push'>\n");
+    res.write("</div>\n");
+    res.write("<input type='submit' class='btn btn-success' value='Push'>\n");
+    res.write("</div>\n");
     res.write("</form>\n");
 }
 
@@ -105,6 +106,8 @@ function gitRemote(res) {
             var output = stdout.toString(),
                 remotes = output.split(/\n/);
 
+            res.write("</div>\n");
+            res.write("<div class='col-md-4'>\n");
             beginSelect(res, "remote");
 
             remotes.forEach(function(remoteName) {
@@ -113,6 +116,7 @@ function gitRemote(res) {
                 }
             });
 
+            res.write("</div>\n");
             endSelect(res);
             endForm(res);
             endPage(res);
@@ -130,6 +134,9 @@ function gitBranch(res) {
             var output = stdout.toString(),
                 branches = output.split(/\n/);
 
+            res.write("<div class='container-fluid'>");
+            res.write("<div class='row'>\n");
+            res.write("<div class='col-md-4'>\n");
             beginForm(res);
             beginSelect(res, "branch");
 
@@ -140,8 +147,10 @@ function gitBranch(res) {
                 if (branchName) {
                     writeOption(res, branchName);
                 }
+
             });
 
+            res.write("</div>\n");
             endSelect(res);
             gitRemote(res);
         }
@@ -155,8 +164,11 @@ function gitStatus(res) {
             writePre(res, "error", stderr);
             endPage(res);
         } else {
+            beginHeading(res, "div class='container'");
             writeHeading(res, "h2", "Git Status");
             writePre(res, "status", stdout);
+            endHeading(res, "div");
+            endHeading(res, "div");
             gitBranch(res);
         }
     });
@@ -173,13 +185,13 @@ function gitPush(req, res) {
         var form = querystring.parse(body);
 
         child_process.exec("git push " + form.remote + " " + form.branch, function(err, stdout, stderr) {
-
             if (err) {
                 writeHeading(res, "h2", "Error pushing repository");
                 writePre(res, "error", stderr);
             } else {
-                writeHeading(res,"h2", "Git Status");
-                writePre(res, "push", stdout);
+                //writeHeading(res,"h2", "Git Status");
+                //writePre(res, "push", stdout);
+
             }
             gitStatus(res);
         });
@@ -202,7 +214,6 @@ function frontPage(req, res) {
             gitPush(req, res);
         } else {
             gitStatus(res);
-            endHeading(res, "div");
         }
     }
 }
